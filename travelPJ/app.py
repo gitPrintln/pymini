@@ -17,13 +17,18 @@ def favicon():
     return send_from_directory('resources/static/imgs', 'mapLogo.ico')
 
 # 홈 화면 search 기능
-@app.route('/search')
+@app.route('/search', methods=['post'])
 def mainSearch():
-    query = request.args.get('query')
+    data = request.get_json()
+    query = data.get('query')
+    print("query 값:", query)  # 터미널에 출력
+    print("query 타입:", type(query))  # 타입 확인
     if query:
         search_url = f"https://search.naver.com/search.naver?query={query} 여행"
-        return naverSearch(search_url)  # 검색 결과로 리다이렉트
-    return naverSearch(search_url)
+        naverSearch(search_url)  # 검색 결과로 리다이렉트
+        return jsonify({"message": "success"})
+    else:
+        return jsonify({"message": "fail"})
     
 # 검색 과정(selenium, webdriver)
 def naverSearch(search_url):
@@ -32,13 +37,7 @@ def naverSearch(search_url):
     browser.maximize_window() # 창 최대화
     browser.get(search_url) # 네이버 여행지
     
-    # 검색 후 검색창 비우기
-    
 
-# 검색 후 검색창 비우기
-@app.route('/clearInput', methods=["post"])
-def clearInput():
-    return jsonify({"new_value": ""})  # 클라이언트에 빈 문자열 반환
-
+ 
 if __name__ == '__main__':
     app.run(debug=True)
