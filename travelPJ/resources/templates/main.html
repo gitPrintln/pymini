@@ -43,20 +43,13 @@
 <body>
     <h1>여행지 추천 사이트에 오신 것을 환영합니다!</h1>
 
-    <div class="search-box">
-        <input type="text" id="searchInput" placeholder="검색어를 입력하세요...">
-        <button onclick="searchFunction()">검색</button>
-    </div>
+    <form action="/search" method="get">
+        <div class="search-box">
+            <input type="text" id="searchInput" name="query" placeholder="검색어를 입력하세요...">
+            <button type="submit">검색</button>
+        </div>
+    </form>
 
-    <script>
-        function searchFunction() {
-            let query = document.getElementById("searchInput").value;
-            if (query) {
-                alert("검색어: " + query);
-            } else {
-                alert("검색어를 입력하세요!");
-            }
-        }
-    </script>
+    <script src="/static/js/main.js"></script>
 </body>
 </html>
