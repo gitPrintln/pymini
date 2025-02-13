@@ -27,17 +27,23 @@ df = df.drop(indices_to_remove)
 # 2. xi, xiv 등 x로 시작하는 모든 행 삭제
 df = df[~df.apply(lambda row: row.astype(str).str.startswith('x').any(), axis=1)]
 
-# 3. 빈 값이 있는 컬럼 삭제(평균 필요량 이후로 따라오는 셀 중에서 빈 값이 있는 부분은 그 아래 6개 셀 삭제)
-target_cell = "평균\n필요량"
+# 3. columns에서 모두 NaN, 빈 값인 부분 없애고 앞으로 당기기(1)
+df = df.dropna(axis=1, how='all')
 
-#filtered_cells = df[df.apply(lambda row: row.astype(str) == target_cell, axis=1)]
+# 4. 빈 값이 있는 컬럼 삭제(2)
+# 평균 필요량 이후로 따라오는 셀 중에서 빈 값이 있는 부분은 그 아래 6개 셀 삭제
+# 빈 값이 아닌 셀이 나오면 중지
+target_cell = "평균\n필요량"
 
 # target_cell과 정확히 일치하는 셀 찾기
 matches = df.eq(target_cell)  # target_cell과 같은 셀이면 True, 아니면 False
-matched_cells = df[matches]
-print(matched_cells)
+# 타겟의 한 칸 뒤 열 찾기
+next_cell = df.shift(-1, axis=1)  # 한 칸 뒤 열로 이동
+empty_next = next_cell.isna()  # 빈 셀인지 확인
 
-# print(filtered_cells)
 
-# df = df.dropna(axis=1, how='all')
-# df.to_csv('modified_file2.csv', index=False, encoding="utf-8-sig")
+# matched_cells = df.where(matches).stack()
+# print(matched_cells)
+
+
+# df.to_csv('modified_file1.csv', index=False, encoding="utf-8-sig")
