@@ -10,6 +10,7 @@ file_path = 'NutritionalManagement\\NMdata\\2020 한국인 영양소 섭취 기�
 # 각 컬럼이 (대분류, 소분류) 형태로 계층 구조를 가짐
 df = pd.read_excel(file_path, engine='openpyxl', header=[0, 1])
 
+
 # '\n' 기준으로 문자열을 리스트로 변환
 # 모든 컬럼을 '\n' 기준으로 리스트로 변환 
 # for col in ['연령', '평균\n필요량', '권장\n섭취량', '충분\n섭취량', '상한\n섭취량']:
@@ -48,4 +49,4 @@ df = pd.read_excel(file_path, engine='openpyxl', header=[0, 1])
 # print(df_melted.head(20))
 
 # 최종 엑셀 쓰기
-# df.to_excel('modified_file2.xlsx', index=False)
+#df.to_excel('modified_file4.xlsx', index=False)
