@@ -6,7 +6,7 @@ Python </br>
 Flask </br>
 Selenium Webdriver </br>
 # 일정
-2025.02.04 ~
+2025.02.04 ~ (진행중)
 # 특징
 Python을 활용하여 다양한 주제로 프로젝트 만들어 보기
 # 목차
