@@ -1,5 +1,5 @@
 import pandas as pd
-
+import numpy as np
 # 1. xlsx 파일 경로
 file_path = 'NutritionalManagement\\NMdata\\2020 한국인 영양소 섭취 기준표.xlsx'
 
@@ -8,45 +8,55 @@ file_path = 'NutritionalManagement\\NMdata\\2020 한국인 영양소 섭취 기�
 # header=[0,1] 옵션을 사용하면 계층적 컬럼 구조
 # 여러 줄의 헤더를 가질 경우
 # 각 컬럼이 (대분류, 소분류) 형태로 계층 구조를 가짐
-df = pd.read_excel(file_path, engine='openpyxl', header=[0, 1])
+df = pd.read_excel(file_path, header=[0, 1], engine='openpyxl')
 
+# 두 줄의 헤더를 연결하여 한 줄의 헤더로 만들기
+df.columns = ['_'.join(col).strip() for col in df.columns]
 
-# '\n' 기준으로 문자열을 리스트로 변환
-# 모든 컬럼을 '\n' 기준으로 리스트로 변환 
-# for col in ['연령', '평균\n필요량', '권장\n섭취량', '충분\n섭취량', '상한\n섭취량']:
-# for col in ['연령', '에너지(kcal/일)', '탄수화물(g/일)', '식이섬유(g/일)']:
-#    df[col] = df[col].str.split('\n')
+ # \n으로 나누어져 있는 열들을 개별 행으로 분리하는 함수
+ # 한 행에 한 줄씩 들어가도록 뒤의 값들도 마찬가지로 해줌
+ # 중간 중간에 성별, 연령, 지방,비타민 이런식으로 header부분이 들어가므로 이부분에서 잠깐
+ # 끊었다가 다시 이어서 붙이려고 체크포인트 지점 만들어줌
+check_point_idx = 0
+def split_and_expand(df, check_point_idx):
+    temp_expanded_df = pd.DataFrame()
+    for idx, row in df.iloc[check_point_idx:].iterrows():
+        # 각 행에 대해 '\n'으로 나누고 빈 셀은 제거
+        expanded_rows = []
+        for cell in row:
+            if isinstance(cell, str) and '\n' in cell:
+                expanded_rows.append(cell.split('\n'))
+            else:
+                expanded_rows.append([cell])
+        # 최대 길이에 맞춰 열을 확장
+        max_len = max(len(items) for items in expanded_rows)
+        expanded_rows = [items + [np.nan] * (max_len - len(items)) for items in expanded_rows]
+        # 새로운 DataFrame으로 변환
+        temp_df = pd.DataFrame(expanded_rows).T
+        temp_df.columns = df.columns
+        temp_expanded_df = pd.concat([temp_expanded_df, temp_df], ignore_index=True)
+        # 값이 성별인 경우 끊었다가 다시 해야함.
+        if '성별' in row.values:
+            check_point_idx = idx + 1 # 한 단계 성별 라인의 행은 건너서 넘어가고
+            return check_point_idx, temp_expanded_df
+    
+    return check_point_idx, temp_expanded_df
 
-# 데이터를 세분화하려면 pd.DataFrame.explode()를 활용해서 행을 펼침
-# 리스트를 개별 행으로 변환 (explode 적용)
-# reset_index(drop=True)로 인덱스 정리.
-# df = df.explode(['연령', '에너지(kcal/일)', '탄수화물(g/일)', '식이섬유(g/일)']).reset_index(drop=True)
+expanded_df = pd.DataFrame()  # 임시 DataFrame 생성
+for idx, row in df.iterrows(): # 0 ~ 끝 인덱스까지
+    if idx == check_point_idx:
+        # DataFrame 확장
+        check_point_idx, piece_expanded_df = split_and_expand(df, check_point_idx)
+        expanded_df = pd.concat([expanded_df, piece_expanded_df], ignore_index=True)  # expanded_df에 덧붙이기
+    else: # 현재 for문에서도 인덱스를 맞춰줌. 체크포인트부터 다시 시작하기 위해서
+        idx += 1
 
-# 3. 병합된 셀 처리 (앞쪽 데이터 채우기)
-# 병합된 셀 때문에 일부 값이 NaN으로 표시되는 것을 해결
-# fillna로 위쪽의 값을 아래로 채움
-#df.iloc[:, 0] = df.iloc[:, 0].fillna(method='ffill')  # 성별
-#df.iloc[:, 1] = df.iloc[:, 1].fillna(method='ffill')  # 연령
+# 첫 성별 부분, 남자면 쭉 남자, 여자면 쭉 여자, 유아면 쭉 유아 빈부분 채워넣기
+#for col in expanded_df.columns:
+expanded_df["성별_Unnamed: 0_level_1"] = expanded_df["성별_Unnamed: 0_level_1"].fillna(method='ffill')
 
+expanded_df.reset_index(drop=True, inplace=True)
 
-
-# 4. 컬럼명 정리 (멀티 인덱스를 단일 컬럼으로 변환)
-# '_'를 사용하여 두 개의 헤더를 하나의 컬럼명으로 합침. strip() : 공백 제거
-# 리스트 컴프리헨션(List Comprehension)
-# isinstance(col, tuple) 의 의미 : col이 튜플(tuple)인지 아닌지 체크하는 조건
-# True이면 튜플을 _로 연결하여 문자열로 변환
-# False이면 변환하지 않고 그대로 유지
-# 단일 컬럼 > 다중 인덱스가 아니라 _로 연결된 단일 컬럼 형태로 변경
-# 예를 들면 에너지_필요량	에너지_권장섭취량 형식으로
-#df.columns = ['_'.join(col).strip() if isinstance(col, tuple) else col for col in df.columns]
-
-#print(df.head(15))
-
-# 5. 데이터 변환 (melt 적용)
-# melt() 를 사용하면 데이터를 긴 형태 (long format)로 변환
-# df_melted = df.melt(id_vars=['성별', '연령'], var_name='영양소', value_name='섭취량')
-
-# print(df_melted.head(20))
 
 # 최종 엑셀 쓰기
-#df.to_excel('modified_file4.xlsx', index=False)
+expanded_df.to_excel('modified_file6.xlsx', index=False)
