@@ -13,6 +13,13 @@ df = pd.read_excel(file_path, header=[0, 1], engine='openpyxl')
 # 두 줄의 헤더를 연결하여 한 줄의 헤더로 만들기
 df.columns = ['_'.join(col).strip() for col in df.columns]
 
+# 컬럼명 \n 제거
+df.columns = df.columns.str.replace("\n", "")
+# 컬럼명에서 .1, .2, .3 패턴이 있는 컬럼 찾기
+#cols_to_remove = [col for col in df.columns if ".1" in col or ".2" in col or ".3" or ".4" in col]
+# 해당 컬럼 제거
+#df = df.drop(columns=cols_to_remove)
+
  # \n으로 나누어져 있는 열들을 개별 행으로 분리하는 함수
  # 한 행에 한 줄씩 들어가도록 뒤의 값들도 마찬가지로 해줌
  # 중간 중간에 성별, 연령, 지방,비타민 이런식으로 header부분이 들어가므로 이부분에서 잠깐
@@ -57,6 +64,25 @@ expanded_df["성별_Unnamed: 0_level_1"] = expanded_df["성별_Unnamed: 0_level_
 
 expanded_df.reset_index(drop=True, inplace=True)
 
+# 수유부 아래에 3 행을 처리(성별, 연령, 셀레늄_평균필요량) 이런 식으로 처리
+target_cell = "수유부"
+# target_cell과 정확히 일치하는 셀 찾기
+matches = expanded_df.eq(target_cell)  # target_cell과 같은 셀이면 True, 아니면 False
+# 빠르게 위치만 찾기(수유부 값 아래 두 번째 행에 값이 있다면 작업해주기)
+matched_cells = matches.stack().loc[lambda x: x].index.tolist()
+target_idx = [index + 2 for index, label in matched_cells]
+print(target_idx)
+for idx in target_idx[2:-1]:
+    for x, data in expanded_df.loc[idx].items():
+        if data:
+            # idx-1에 값 변경
+            expanded_df.loc[idx-1, x] = expanded_df.loc[idx-1, x] + "_" + expanded_df.loc[idx, x] + expanded_df.loc[idx+1, x]
+    # idx와 idx+1 삭제
+    expanded_df.drop([idx, idx+1], inplace=True)
+
+for idx in target_idx[2:-1]:            
+    for data in expanded_df.loc[idx-1]:
+        print(data)
 
 # 최종 엑셀 쓰기
-expanded_df.to_excel('modified_file6.xlsx', index=False)
+# expanded_df.to_excel('modified_file8.xlsx', index=False)

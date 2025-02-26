@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.exc import SQLAlchemyError
 
 # 1. PostgreSQL 연결 정보 설정
 # postgresql://사용자이름:비밀번호@호스트 주소:기본포트:연결할 DB이름
@@ -36,7 +37,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # 6. 테이블 생성
 Base.metadata.create_all(bind=engine)
 
-# 7. 데이터 삽입 예시
+# 7. 데이터 삽입
 def create_user(db_session, name: str, username: str, age: int):
     db_user = User(name=name, username=username, age=age) # user 객체 생성
     db_session.add(db_user) # session에 객체 추가
@@ -46,16 +47,18 @@ def create_user(db_session, name: str, username: str, age: int):
 
 # 8. 세션을 이용한 DB 작업
 # 세션 객체로 DB에서 데이터를 조회하거나 추가, 수정, 삭제하는 작업을 수행하는 데 사용
-    
 if __name__ == "__main__":
     # 세션 시작
     # 새로운 세션 객체를 생성
     # 세션 객체는 DB에서 데이터를 조회하거나 추가, 수정, 삭제하는 작업을 수행하는 데 사용
     db = SessionLocal()
 
-    # 새로운 사용자 생성
-    new_user = create_user(db, "홍길동", "hong112", 30)
-    print(f"새로 생성된 사용자: {new_user.name}, {new_user.username}, {new_user.age}")
-
-    # 세션 종료
-    db.close()
+    try:
+        # 새로운 사용자 생성
+        new_user = create_user(db, "홍길동", "hong112", 30)
+        print(f"새로 생성된 사용자: {new_user.name}, {new_user.username}, {new_user.age}")
+    except SQLAlchemyError as e:
+        print(f"DB 작업 중 오류: {e}")
+    finally:
+        # 세션 종료
+        db.close()
