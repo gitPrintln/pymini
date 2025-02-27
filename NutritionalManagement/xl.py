@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+from openpyxl import Workbook
+
+
 # 1. xlsx 파일 경로
 file_path = 'NutritionalManagement\\NMdata\\2020 한국인 영양소 섭취 기준표.xlsx'
 
@@ -71,18 +74,59 @@ matches = expanded_df.eq(target_cell)  # target_cell과 같은 셀이면 True, �
 # 빠르게 위치만 찾기(수유부 값 아래 두 번째 행에 값이 있다면 작업해주기)
 matched_cells = matches.stack().loc[lambda x: x].index.tolist()
 target_idx = [index + 2 for index, label in matched_cells]
-print(target_idx)
-for idx in target_idx[2:-1]:
-    for x, data in expanded_df.loc[idx].items():
-        if data:
-            # idx-1에 값 변경
-            expanded_df.loc[idx-1, x] = expanded_df.loc[idx-1, x] + "_" + expanded_df.loc[idx, x] + expanded_df.loc[idx+1, x]
-    # idx와 idx+1 삭제
-    expanded_df.drop([idx, idx+1], inplace=True)
+for idx in target_idx[:-1]:
+    temp_header = None
+    for x, data in expanded_df.iloc[idx, 2:].items():
+        if pd.notna(data):
+            if(pd.notna(expanded_df.loc[idx-1, x])):
+                temp_header = expanded_df.loc[idx-1, x]
+                expanded_df.loc[idx-1, x] = str(expanded_df.loc[idx-1, x]) + "_" + str(expanded_df.loc[idx, x]) + str(expanded_df.loc[idx+1, x])
+            else:
+                expanded_df.loc[idx-1, x] = temp_header + "_" + str(expanded_df.loc[idx, x]) + str(expanded_df.loc[idx+1, x])
+    
+delete_idxs = []        
+for idx in target_idx:
+    delete_idxs.append(idx)
+    if idx + 1 < len(expanded_df):
+        delete_idxs.append(idx + 1)
+delete_idxs.remove(461)
+delete_idxs.append(246)
+expanded_df.drop(delete_idxs, inplace=True)
 
-for idx in target_idx[2:-1]:            
-    for data in expanded_df.loc[idx-1]:
-        print(data)
+# 스프레드 시트에 테이블별로 나누기
+def split_and_save(df):
+    cnt = 0
+    current_data = []
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Sheet{cnt + 1}"
+    
+    for idx, row in expanded_df.iterrows():
+        # 첫 컬럼에서 "성별"이 나타날 때마다 데이터를 새로운 시트로 나누기
+        if row["성별_Unnamed: 0_level_1"] == "성별":
+            # 데이터가 있으면 현재 시트에 추가
+            if current_data:
+                for row_data in current_data:
+                    ws.append(row_data)
+            
+            # 새로운 시트 생성
+            cnt += 1
+            ws = wb.create_sheet(f"Sheet{cnt + 1}") if cnt > 0 else wb.active
+            current_data = [row.tolist()]  # 현재 데이터 새로운 데이터로 설정
+        
+        # 성별이 아닌경우 데이터 추가
+        else: 
+            current_data.append(row.tolist())
+    
+    # 마지막 데이터 저장
+    if current_data:
+        for row_data in current_data:
+            ws.append(row_data)
+    
+    # 워크북 저장
+    wb.save("Splitted_Sheets.xlsx")
 
+# 시트 별로 하나에 한 테이블씩 들어가도록 나누기   
+split_and_save(expanded_df)
 # 최종 엑셀 쓰기
 # expanded_df.to_excel('modified_file8.xlsx', index=False)
