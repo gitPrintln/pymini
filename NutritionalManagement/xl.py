@@ -97,9 +97,9 @@ expanded_df.drop(delete_idxs, inplace=True)
 def split_and_save(df):
     cnt = 0
     current_data = []
-    wb = Workbook()
-    ws = wb.active
-    ws.title = f"Sheet{cnt + 1}"
+    wb = Workbook() # 새로운 Excel 파일
+    ws = wb.active # 현재 활성화된 시트를 가져옴
+    ws.title = f"Sheet{cnt + 1}" # 현재 활성화된 시트의 이름 변경
     
     for idx, row in expanded_df.iterrows():
         # 첫 컬럼에서 "성별"이 나타날 때마다 데이터를 새로운 시트로 나누기
@@ -123,10 +123,40 @@ def split_and_save(df):
         for row_data in current_data:
             ws.append(row_data)
     
-    # 워크북 저장
-    wb.save("Splitted_Sheets.xlsx")
+    # 빈 컬럼 삭제
+    import math
+    sheet_names = wb.sheetnames
+    for sheet in sheet_names:
+        current_sheet = wb[sheet] # 해당 시트 가져옴
+        max_column = current_sheet.max_column # 컬럼 길이
+        for col in range(max_column, 0, -1): # 1씩 감소하면서 오른쪽 부터 열을 삭제하면서 idx 바뀌는 거 방지
+            # 열의 모든 셀값 가져와서
+            column_cells = [current_sheet.cell(row=row, column=col).value for row in range(1, current_sheet.max_row + 1)]
+            # 모두 비어있는지 확인 
+            # column_cells은 값을 확인해보면 NaN은 주로 pandas나 numpy에서 수치 계산을 할 때 발생하는 값으로 빈값이 nan이 발생
+            # 하지만 아래 조건 검사에서는 openpyxl의 엑셀파일로 읽을 때는 None가 발생 
+            # 즉 nan이 있는 값에서 None를 확인은 잘 작동이 안되는 상황이어서 nan을 제대로 확인하려면
+            # math.isnan을 사용하여 nan은 float형식이기 때문에 이걸로 처리해줘야함.
+            # 만약 pandas에서 Nan처리를 할거라면 dropna()라는 간단한 메서드가 있기는함.
+            # 여기서는 openpyxl을 사용했기 때문에 아래와 같이 조건 검사
+            if all(cell is None or (isinstance(cell, float) and math.isnan(cell)) for cell in column_cells):
+                current_sheet.delete_cols(col) # 삭제
+                
+    # 첫 번째 시트 날라간 header 추가
+    first_sheet = wb.worksheets[0]
+    first_sheet_header = ['성별', '연령', '에너지(kcal/일)_필요추정량', '탄수화물(g/일)_평균필요량', 
+                        '탄수화물(g/일)_권장섭취량', '탄수화물(g/일)_충분섭취량', '식이섬유(g/일)_충분섭취량']
+    first_sheet.insert_rows(1)
+    for col, header in enumerate(first_sheet_header, start=1):
+        first_sheet.cell(row=1, column=col, value=header)
+    
+    # 워크북 최종 저장
+    wb.save("final_xl.xlsx")
 
-# 시트 별로 하나에 한 테이블씩 들어가도록 나누기   
+# 시트 별로 하나에 한 테이블씩 들어가도록 나누기/빈 컬럼 삭제/사라진 첫 컬럼 header 생성
 split_and_save(expanded_df)
+
+
+
 # 최종 엑셀 쓰기
 # expanded_df.to_excel('modified_file8.xlsx', index=False)
