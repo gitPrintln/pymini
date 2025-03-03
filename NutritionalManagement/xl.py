@@ -123,12 +123,14 @@ def split_and_save(df):
         for row_data in current_data:
             ws.append(row_data)
     
-    # 빈 컬럼 삭제
+    # 빈 컬럼 삭제/모든 시트 첫 행을 컬럼으로 설정하기
     import math
     sheet_names = wb.sheetnames
+    formatted_sheets = {}
     for sheet in sheet_names:
         current_sheet = wb[sheet] # 해당 시트 가져옴
         max_column = current_sheet.max_column # 컬럼 길이
+        # 빈 컬럼 삭제
         for col in range(max_column, 0, -1): # 1씩 감소하면서 오른쪽 부터 열을 삭제하면서 idx 바뀌는 거 방지
             # 열의 모든 셀값 가져와서
             column_cells = [current_sheet.cell(row=row, column=col).value for row in range(1, current_sheet.max_row + 1)]
@@ -141,6 +143,18 @@ def split_and_save(df):
             # 여기서는 openpyxl을 사용했기 때문에 아래와 같이 조건 검사
             if all(cell is None or (isinstance(cell, float) and math.isnan(cell)) for cell in column_cells):
                 current_sheet.delete_cols(col) # 삭제
+        
+        # 모든 시트 첫 행을 컬럼으로 설정하기(첫 컬럼은 밑에서 따로해줌.)
+        if sheet != 'Sheet1':        
+            headers = [cell.value for cell in current_sheet[1]]  # 첫 번째 행 가져오기
+            data = [[cell.value for cell in row] for row in current_sheet.iter_rows(min_row=2)]  # 첫 번째 행 제외한 데이터 가져오기
+
+            # 저장
+            formatted_sheets[sheet] = {
+                "headers": headers,
+                "data": data
+            }
+    
                 
     # 첫 번째 시트 날라간 header 추가
     first_sheet = wb.worksheets[0]
