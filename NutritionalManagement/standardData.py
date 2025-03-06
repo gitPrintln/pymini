@@ -74,3 +74,11 @@ finally:
     db.close()
 '''
 # 9. 세션을 이용한 DB 작업(영양소 작업)
+try:
+    print("dbcommit")
+    # db.commit()
+except Exception as e:
+    db.rollback()  # 오류 발생 시 롤백
+    print("데이터 삽입 오류: ", e)
+finally:
+    db.close()
