@@ -7,7 +7,7 @@ config = {
     'port': '5432',             # 기본 포트는 5432
     'database': 'postgres',     # 연결할 데이터베이스 이름
     'user': 'postgres',         # 사용자 이름
-    'password': 'tiger'         # 비밀번호
+    'password': '1234'         # 비밀번호
 }
 conn = None
 
@@ -16,16 +16,17 @@ try:
     # with 절 : 자원 관리와 코드의 간결성, 가독성, 재사용성, 성능, 복잡한 쿼리 분할 용도
     # 자원 누수를 방지, 예외 처리 시에도 자원이 안전하게 해제
     with psycopg2.connect(**config) as conn:
-        
+
+        # conn.set_client_encoding('UTF8')
         # conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         # SQL 쿼리 결과를 튜플이 아니라, 필드명이 키로, 각 행의 데이터가 값으로 담긴 딕셔너리로 받을 수 있음
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor: 
             print("PostgreSQL 연결 성공")
 
             # 예제 쿼리 실행
-            # cursor.execute("SELECT version();")
-            # version = cursor.fetchone()
-            # print("PostgreSQL 버전:", version)
+            cursor.execute("SELECT version();")
+            version = cursor.fetchone()
+            print("PostgreSQL 버전:", version)
             
             # 시작 전에 table 초기화
             cursor.execute('drop table if exists test')

@@ -5,10 +5,16 @@ from sqlalchemy.exc import SQLAlchemyError
 
 # 1. PostgreSQL 연결 정보 설정
 # postgresql://사용자이름:비밀번호@호스트 주소:기본포트:연결할 DB이름
-DATABASE_URL = "postgresql://postgres:tiger@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:1234@localhost:5432/postgres"
 
 # 2. SQLAlchemy 엔진 생성 > PostgreSQL DB에 연결
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+            DATABASE_URL,
+            pool_size=10,  # 풀 크기
+            max_overflow=20,  # 풀을 초과한 커넥션 수
+            pool_timeout=30,  # 커넥션을 얻기 위한 최대 대기 시간
+            pool_recycle=1800,  # 커넥션 재사용 시간 (초)
+)
 
 # 3. 기본 베이스 클래스 생성 > ORM의 기반이 되는 클래스인 Base 생성
 #    DB 테이블과 Python 클래스 간의 매핑을 정의

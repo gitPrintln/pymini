@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
 
 # 1. PostgreSQL 연결 정보 설정
-DATABASE_URL = "postgresql://postgres:tiger@localhost:5432/postgres"
+DATABASE_URL = "postgresql://postgres:1234@localhost:5432/postgres"
 
 # 2. SQLAlchemy 엔진 생성
 engine = create_engine(DATABASE_URL)
