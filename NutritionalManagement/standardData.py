@@ -52,7 +52,6 @@ calorie_data = {
 
 # 8. 세션을 이용한 DB 작업(칼로리 작업)
 db = SessionLocal()
-'''
 try:
     for i, age in enumerate(calorie_data["연령대"]):
         for key, values in calorie_data.items():
@@ -72,7 +71,7 @@ except Exception as e:
     print("데이터 삽입 오류: ", e)
 finally:
     db.close()
-'''
+    
 # 9. 세션을 이용한 DB 작업(영양소 작업)
 try:
     print("dbcommit")

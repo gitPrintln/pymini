@@ -23,54 +23,34 @@ try:
         with conn.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor: 
             print("PostgreSQL 연결 성공")
 
-            # 예제 쿼리 실행
-            cursor.execute("SELECT version();")
-            version = cursor.fetchone()
-            print("PostgreSQL 버전:", version)
-            
-            # 시작 전에 table 초기화
-            cursor.execute('drop table if exists test')
-            
-            create_script = ''' CREATE TABLE IF NOT EXISTS test(
-                                    id          int PRIMARY KEY,
-                                    name        varchar(40) NOT NULL,
-                                    username    varchar(40) NOT NULL UNIQUE,
-                                    age         int)'''
-            
-            cursor.execute(create_script)
-            
-            insert_script = 'INSERT INTO test (id, name, username, age) VALUES (%s, %s, %s, %s)'
-            insert_value = [(1, '홍길동', 'mann', 25), (2, '이순신', 'lee', 26), (3, '신립', 'sin', 33)]
-            
-            for data in insert_value:
-                cursor.execute(insert_script, data)
-            
-            # cursor.execute('SELECT * FROM test')
-            # for data in cursor.fetchall():
-            #     print(data)
-                
-            update_script = "UPDATE test SET age = 29 where name = '이순신'"
-            cursor.execute(update_script)
-            
-            cursor.execute('SELECT * FROM test')
-            for data in cursor.fetchall():
-                print(data['name'], data['username'], data['age'])
-            
-            # 값을 쿼리와 분리함으로써 SQL 인젝션 공격을 예방
-            # 쿼리에서 name 값 '홍길동'을 플레이스홀더(%s)로 바인딩하려면 튜플 형태로 전달
-            # 괄호 ()로 값을 묶으면 튜플로 간주. 
-            # 그러나 단 하나의 값을 괄호로 묶을 경우, 그것이 튜플로 인식되기 위해서는 쉼표가 필요
-            delete_script = 'DELETE FROM test WHERE name = %s'
-            delete_value = ('홍길동',) 
-            cursor.execute(delete_script, delete_value)
-            
-            cursor.execute('SELECT * FROM test')
-            for data in cursor.fetchall():
-                print(data['name'], data['username'], data['age'])
-            
+            cursor.executemany("""
+                INSERT INTO "SEX" (sex_id, sex_code) VALUES (%s, %s)
+            """, [
+                (1, '남성'),
+                (2, '여성')
+            ])
+
+            # 연령대 데이터 삽입
+            cursor.executemany("""
+                INSERT INTO "AGE" (age_id, age_min, age_max, label) VALUES (%s, %s, %s, %s)
+            """, [
+                (1, 0, 0, '0-5개월'),
+                (2, 0, 0, '6-11개월'),
+                (3, 1, 2, '1-2세'),
+                (4, 3, 5, '3-5세'),
+                (5, 6, 8, '6-8세'),
+                (6, 9, 11, '9-11세'),
+                (7, 12, 14, '12-14세'),
+                (8, 15, 18, '15-18세'),
+                (9, 19, 29, '19-29세'),
+                (10, 30, 49, '30-49세'),
+                (11, 50, 64, '50-64세'),
+                (12, 65, 74, '65-74세'),
+                (13, 75, None, '75세 이상'),
+            ])
             conn.commit()
             # cursor.execute('drop table if exists test')
-            
+            cursor.close()
 except Exception as e:
     print("오류: ", e)
 finally:
