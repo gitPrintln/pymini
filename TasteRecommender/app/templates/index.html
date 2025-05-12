@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>추천</title>
+</head>
+<body>
+    <div class="container">
+        <h1>추천 음식/레시피 목록</h1>
+        {% for recipe in recommendations %}
+            <div class="recipe">
+                <h3>레시피/음식 이름</h3>
+                <p>재료: </p>
+                <button>다른 음식 추천</button>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>
