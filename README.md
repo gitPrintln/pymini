@@ -3,8 +3,11 @@
 # 사용기술
 VSCode </br>
 Python </br>
+PostgreSQL </br>
 Flask </br>
 Selenium Webdriver </br>
+SQLAlchemy </br>
+psycopg2 </br>
 # 일정
 2025.02.04 ~ 2025.03.04 </br>
 2025.05.05 ~ (진행중)
