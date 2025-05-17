@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>추천 결과</title>
+</head>
+<body>
+    <h2>📌 예측된 목적: {{ purpose }}</h2>
+    <h3>🍴 추천 레시피</h3>
+    {% if recipes %}
+        <ul>
+        {% for r in recipes %}
+            <li>
+                <h4>{{ r['음식명'] }}</h4>
+                <p><strong>재료:</strong> {{ r['재료'] | join(', ') }}</p>
+                <p><strong>조리법:</strong> {{ r['조리법'] }}</p>
+                <p><strong>영양정보:</strong> 열량 {{ r['영양정보']['열량'] }}kcal, 단백질 {{ r['영양정보']['단백질'] }}g, 탄수화물 {{ r['영양정보']['탄수화물'] }}g, 지방 {{ r['영양정보']['지방'] }}g</p>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>😢 추천할 레시피가 없습니다.</p>
+    {% endif %}
+    <a href="/">← 다시 입력하기</a>
+</body>
+</html>

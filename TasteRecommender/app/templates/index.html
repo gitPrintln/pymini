@@ -7,13 +7,10 @@
 <body>
     <div class="container">
         <h1>추천 음식/레시피 목록</h1>
-        {% for recipe in recommendations %}
-            <div class="recipe">
-                <h3>레시피/음식 이름</h3>
-                <p>재료: </p>
-                <button>다른 음식 추천</button>
-            </div>
-        {% endfor %}
+        <form method="post">
+            <input type="text" name="user_input" style="width:300px;" placeholder="예: 단백질 많은 간편한 음식" size="40" required>
+            <button type="submit">추천받기</button>
+        </form>
     </div>
 </body>
 </html>
