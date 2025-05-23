@@ -10,42 +10,25 @@ user_input = "가볍고 단백질 많은 음식 뭐 있을까?"
 # 사전 정의한 목적 후보
 labels = ["식단관리", "간식", "고단백", "영양 보충", "단백질 보충", "한식", "채식", "즉석식품", "명절음식"]
 
-# # 1. 사용자 입력과 목적들을 임베딩
-# input_embedding = model.encode(user_input, convert_to_tensor=True)
-# label_embeddings = model.encode(labels, convert_to_tensor=True)
 
-# # 2. 유사도 계산
-# cosine_scores = util.cos_sim(input_embedding, label_embeddings)
-
-# # 3. 가장 유사한 목적 선택
-# best_match_index = cosine_scores.argmax()
-# predicted_purpose = labels[best_match_index]
-# score = cosine_scores[0][best_match_index].item()
-
-# print(f"🔍 예측된 목적: {predicted_purpose} (유사도: {score:.4f})")
-
-# # 4. 레시피 추천
-# recommended = [r for r in recipes if r['목적'] == predicted_purpose]
-
-# # 5. 결과 출력
-# print("\n🍽 추천 레시피:")
-# if recommended:
-#     for r in recommended:
-#         print(f"- {r['음식명']}")
-# else:
-#     print("추천할 레시피가 없습니다.")
-
-def recommend_by_input(user_input, threshold=0.35):
+def recommend_by_input(user_input, threshold=0.3):
+    # 입력 임베딩
     input_embedding = model.encode(user_input, convert_to_tensor=True)
+    # 목적 임베딩
     label_embeddings = model.encode(labels, convert_to_tensor=True)
 
-    cosine_scores = util.cos_sim(input_embedding, label_embeddings)
-    best_index = cosine_scores.argmax()
-    predicted_purpose = labels[best_index]
-    best_score = cosine_scores[0][best_index].item()
+    # 코사인 유사도 계산 (1 x N)
+    cosine_scores = util.cos_sim(input_embedding, label_embeddings)[0]
+    
+    # 임계값 넘는 목적(라벨) 골라내기, (라벨, 점수) 튜플 리스트
+    selected = [(labels[i], cosine_scores[i].item()) for i in range(len(labels)) if cosine_scores[i] > threshold]
+    if not selected:
+        return {}
+    
+    # 유사도 높은 순 정렬
+    selected.sort(key=lambda x: x[1], reverse=True)
+    best_purpose, best_score = selected[0]
 
-    if best_score < threshold:
-        return None, []
+    recommended = [r for r in recipes if r['목적'] == best_purpose]
 
-    recommended = [r for r in recipes if r['목적'] == predicted_purpose]
-    return predicted_purpose, recommended
+    return best_purpose, recommended
