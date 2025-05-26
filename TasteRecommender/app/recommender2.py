@@ -11,7 +11,7 @@ user_input = "가볍고 단백질 많은 음식 뭐 있을까?"
 labels = ["식단관리", "간식", "고단백", "영양 보충", "단백질 보충", "한식", "채식", "즉석식품", "명절음식"]
 
 
-def recommend_by_input(user_input, threshold=0.3):
+def recommend_by_input(user_input, threshold=0.5):
     # 입력 임베딩
     input_embedding = model.encode(user_input, convert_to_tensor=True)
     # 목적 임베딩
