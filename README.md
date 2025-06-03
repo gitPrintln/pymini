@@ -10,6 +10,7 @@ SQLAlchemy </br>
 psycopg2 </br>
 Zero-shot classification </br>
 Fine-tuned 모델 </br>
+vue </br>
 # 일정
 2025.02.04 ~ 2025.03.04 </br>
 2025.05.05 ~ (진행중)
