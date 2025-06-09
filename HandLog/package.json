@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm --prefix frontend run dev\" \"python backend/run.py\""
+    "dev": "concurrently --shell cmd \"npm --prefix frontend run dev\" \"python backend/run.py\""
   },
   "keywords": [],
   "author": "",
