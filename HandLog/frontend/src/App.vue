@@ -24,7 +24,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from 'vue';
+import axios from 'axios';
 
 const weekDays = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -98,6 +99,16 @@ const nextMonth = () => {
     month.value += 1
   }
 }
+
+// 스케쥴 등록 api
+const schedules = ref([])
+
+onMounted(async () => {
+  const response = await axios.get('http://localhost:5000/api/schedules/2025-06-18')
+  schedules.value = response.data
+})
+
+
 </script>
 
 <style scoped>
