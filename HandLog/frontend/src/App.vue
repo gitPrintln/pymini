@@ -20,11 +20,18 @@
         </tr>
       </tbody>
     </table>
+
+    <MyModal
+      v-if="isModalOpen"
+      :date="selectedDate"
+      :memo="scheduleMemo"
+      @close="isModalOpen = false"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import axios from 'axios';
 
 const weekDays = ['일', '월', '화', '수', '목', '금', '토']
@@ -104,10 +111,11 @@ const nextMonth = () => {
 const schedules = ref([])
 
 onMounted(async () => {
-  const response = await axios.get('http://localhost:5000/api/schedules/2025-06-18')
+  const response = await axios.get('http://localhost:5000/api/schedules/')
   schedules.value = response.data
 })
 
+const isModalOpen = ref(false)
 
 </script>
 
